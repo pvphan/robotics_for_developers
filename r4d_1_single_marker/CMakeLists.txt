@@ -23,4 +23,6 @@ add_executable(single_marker_node src/single_marker_node.cpp)
 
 target_link_libraries(single_marker_node
   ${catkin_LIBRARIES}
+  tbb
+  gtsam
 )

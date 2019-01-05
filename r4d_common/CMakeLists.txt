@@ -11,23 +11,28 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   eigen_conversions
   rcars_detector_msgs
-  gtsam_catkin
 )
 
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(gtsam NO_MODULE CONFIGS gtsamConfig.cmake GTSAMConfig.cmake)
 
 catkin_python_setup()
 
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES r4d_common
-  CATKIN_DEPENDS geometry_msgs nav_msgs rcars_detector_msgs std_msgs rosbag tf eigen_conversions gtsam_catkin
+  CATKIN_DEPENDS geometry_msgs nav_msgs rcars_detector_msgs std_msgs rosbag tf eigen_conversions
   DEPENDS OpenCV Eigen3
+
+  ## vinh added
+  #INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS}
+  #LIBRARIES ${OpenCV_LIBS}
+  ## /vinh added
 )
 
 include_directories(
   include
-  ${OpenCV_INCLUDE_DIRS}	
+  ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )

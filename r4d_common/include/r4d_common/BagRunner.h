@@ -17,11 +17,11 @@ namespace fiducial_slam {
 
     template <class Localizer>
     struct BagRunner {
-        BagRunner (ros::NodeHandle& nh, ros::NodeHandle& nh_p) : 
+        BagRunner (ros::NodeHandle& nh, ros::NodeHandle& nh_p) :
                                           nh_(nh),
                                           nh_p_(nh_p),
                                           localizer_(nh_, nh_p_) {
-            std::string bag_fname("/Users/niko/rcars_table_markers.bag");
+            std::string bag_fname("/media/nvidia/nvme256/rcarsdata/dataset_table.bag");
             nh_p_.param("bag_fname", bag_fname, bag_fname);
 
             ROS_WARN_STREAM("Opening bag " << bag_fname);
