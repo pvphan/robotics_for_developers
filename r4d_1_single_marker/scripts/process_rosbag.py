@@ -5,11 +5,91 @@ import apriltag
 import cv2
 import numpy as np
 import rosbag
+import tf
 
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image, CameraInfo
 from geometry_msgs.msg import Pose, Point, Quaternion
 from rcars_detector_msgs.msg import Tag, TagArray
+
+def main():
+    cvBridge = CvBridge()
+    detector = apriltag.Detector()
+
+    shouldIncludeDebugImage = False
+    #dataSetName = "dataset_dataset1"
+    dataSetName = "dataset_table"
+    inputPath = "/media/nvidia/nvme256/rcarsdata/{}.bag".format(dataSetName)
+    outputPath = "/media/nvidia/nvme256/fiducial_slam/{}_tagged.bag".format(dataSetName)
+    allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
+    tagsTopic = "/rcars/detector/tags"
+    D = None
+    K = None
+
+    try:
+        inputBag = rosbag.Bag(inputPath)
+        outputBag = rosbag.Bag(outputPath, "w")
+
+        for topic, msg, t in inputBag.read_messages(topics=allTopics):
+            if topic == "/tf" and msg.transforms:
+                outputBag.write(topic, msg, msg.transforms[0].header.stamp)
+            else:
+                if topic == "/cam0/image_raw":
+                    # can't detect tag pose if we don't have camera parameters
+                    if D is None or K is None:
+                        continue
+
+                    print(topic, t)
+                    imageDistorted = cvBridge.imgmsg_to_cv2(msg, "mono8")
+
+                    # undistort image
+                    h, w = imageDistorted.shape[:2]
+                    newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(K, D, (w,h), 0, (w,h))
+                    imageUndistorted = cv2.undistort(imageDistorted, K, D, None, newCameraMatrix)
+                    debugImage = cv2.cvtColor(imageUndistorted, cv2.COLOR_GRAY2BGR)
+
+                    # detect april tag, write to output bag
+                    tagArray = TagArray()
+                    detections = detector.detect(imageUndistorted)
+
+                    for detection in detections:
+                        cameraParams = K[0,0], K[1,1], K[0,2], K[1,2]
+                        cMm, _, _ = detector.detection_pose(detection, cameraParams)
+
+                        tag = Tag()
+                        tag.id = detection.tag_id
+                        rosCorners = map(lambda x: Point(x[0], x[1], 0.), detection.corners)
+                        tag.corners = rosCorners
+                        tag.pose = getRosPoseFromMatrix(cMm)
+
+                        tagArray.tags.append(tag)
+
+                        # draw on debug image
+                        if shouldIncludeDebugImage:
+                            for corner in detection.corners:
+                                cornerInt = map(lambda x: int(round(x)), corner)
+                                cv2.circle(debugImage, tuple(cornerInt), 5, (0, 255, 0))
+
+                            # convert back to verify
+                            cMm_ = getMatrixFromRosPose(tag.pose)
+                            drawAxes(debugImage, K, cMm_)
+
+                    outputBag.write(tagsTopic, tagArray, msg.header.stamp if msg._has_header else t)
+
+                    if shouldIncludeDebugImage:
+                        imageMsg = cvBridge.cv2_to_imgmsg(debugImage, "bgr8")
+                        outputBag.write("/cam0/detection_image", imageMsg, msg.header.stamp if msg._has_header else t)
+
+                elif topic == "/cam0/camera_info":
+                    K = np.array(list(msg.K)).reshape((3,3)).astype(np.float32)
+                    D = np.array(list(msg.D)).astype(np.float32)
+                    outputBag.write(topic, msg, msg.header.stamp if msg._has_header else t)
+                else:
+                    outputBag.write(topic, msg, msg.header.stamp if msg._has_header else t)
+
+    finally:
+        inputBag.close()
+        outputBag.close()
 
 def mmult(matrices):
     return reduce(lambda a,b: np.dot(a, b), matrices)
@@ -77,102 +157,42 @@ def getRosPoseFromMatrix(pose4x4):
     pose = Pose(Point(*pose4x4[:3,3]), rosQuaternion)
     return pose
 
+def getMatrixFromRosPose(rosPose):
+    quaternion = np.array([
+        rosPose.orientation.x,
+        rosPose.orientation.y,
+        rosPose.orientation.z,
+        rosPose.orientation.w,
+    ], dtype=np.float32)
+    pose4x4 = tf.transformations.quaternion_matrix(quaternion)
+    pose4x4[:3,3] = np.array([rosPose.position.x, rosPose.position.y, rosPose.position.z])
+    return pose4x4
+
 def rvecTvecFromMatrix4x4(M):
     rvec = cv2.Rodrigues(M[:3, :3])[0].flatten()
     tvec = M[:3, 3].flatten()
     return rvec, tvec
 
-def main():
-    cvBridge = CvBridge()
-    detector = apriltag.Detector()
-
-    shouldIncludeDebugImage = False
-    inputPath = "/media/nvidia/nvme256/rcarsdata/dataset_table.bag"
-    outputPath = "/media/nvidia/nvme256/fiducial_slam/dataset_table_lean.bag"
-    allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
-    tagsTopic = "/rcars/detector/tags"
+def drawAxes(debugImage, K, poseAxes):
     axisColors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)] # RGB
-    D = None
-    K = None
+    length = 0.5
+    markerAxes = np.array([
+        [length, 0, 0, 1],
+        [0, length, 0, 1],
+        [0, 0, length, 1],
+        [0, 0, 0, 1],
+    ], dtype=np.float32).T
 
-    try:
-        inputBag = rosbag.Bag(inputPath)
-        outputBag = rosbag.Bag(outputPath, "w")
+    homogK = np.eye(4, dtype=np.float32)
+    homogK[:3, :3] = K
 
-        for topic, msg, t in inputBag.read_messages(topics=allTopics):
-            if topic == "/tf" and msg.transforms:
-                outputBag.write(topic, msg, msg.transforms[0].header.stamp)
-            else:
-                if topic == "/cam0/image_raw":
-                    # can't detect tag pose if we don't have camera parameters
-                    if D is None or K is None:
-                        continue
-
-                    print(topic, t)
-                    imageDistorted = cvBridge.imgmsg_to_cv2(msg, "mono8")
-
-                    # undistort image
-                    h, w = imageDistorted.shape[:2]
-                    newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(K, D, (w,h), 0, (w,h))
-                    imageUndistorted = cv2.undistort(imageDistorted, K, D, None, newCameraMatrix)
-                    debugImage = cv2.cvtColor(imageUndistorted, cv2.COLOR_GRAY2BGR)
-
-                    # detect april tag, write to output bag in /rcars/detector/tags topic
-                    tagArray = TagArray()
-                    detections = detector.detect(imageUndistorted)
-
-                    for detection in detections:
-                        cameraParams = K[0,0], K[1,1], K[0,2], K[1,2]
-                        cMm, _, _ = detector.detection_pose(detection, cameraParams)
-
-                        tag = Tag()
-                        tag.id = detection.tag_id
-                        rosCorners = map(lambda x: Point(x[0], x[1], 0.), detection.corners)
-                        tag.corners = rosCorners
-                        tag.pose = getRosPoseFromMatrix(cMm)
-
-                        tagArray.tags.append(tag)
-
-                        # draw on debug image
-                        if shouldIncludeDebugImage:
-                            for corner in detection.corners:
-                                cornerInt = map(lambda x: int(round(x)), corner)
-                                cv2.circle(debugImage, tuple(cornerInt), 5, (0, 255, 0))
-
-                            length = 0.5
-                            markerAxes = np.array([
-                                [length, 0, 0, 1],
-                                [0, length, 0, 1],
-                                [0, 0, length, 1],
-                                [0, 0, 0, 1],
-                            ], dtype=np.float32).T
-
-                            imageAxes = mmult([homogK, cMm, markerAxes])
-                            axesNormed = (imageAxes / imageAxes[2,:])
-                            origin = tuple(map(lambda x: int(round(x)), axesNormed[:2, 3]))
-                            for i in range(3):
-                                color = axisColors[i]
-                                vertex = tuple(map(lambda x: int(round(x)), axesNormed[:2, i]))
-                                cv2.line(debugImage, vertex, origin, color, 1)
-
-                    outputBag.write(tagsTopic, tagArray, msg.header.stamp if msg._has_header else t)
-
-                    if shouldIncludeDebugImage:
-                        imageMsg = cvBridge.cv2_to_imgmsg(debugImage, "bgr8")
-                        outputBag.write("/cam0/detection_image", imageMsg, msg.header.stamp if msg._has_header else t)
-
-                elif topic == "/cam0/camera_info":
-                    K = np.array(list(msg.K)).reshape((3,3)).astype(np.float32)
-                    D = np.array(list(msg.D)).astype(np.float32)
-                    homogK = np.eye(4, dtype=np.float32)
-                    homogK[:3, :3] = K
-                    outputBag.write(topic, msg, msg.header.stamp if msg._has_header else t)
-                else:
-                    outputBag.write(topic, msg, msg.header.stamp if msg._has_header else t)
-
-    finally:
-        inputBag.close()
-        outputBag.close()
+    imageAxes = mmult([homogK, poseAxes, markerAxes])
+    axesNormed = (imageAxes / imageAxes[2,:])
+    originUv = tuple(map(lambda x: int(round(x)), axesNormed[:2, 3]))
+    for i in range(3):
+        color = axisColors[i]
+        vertexUv = tuple(map(lambda x: int(round(x)), axesNormed[:2, i]))
+        cv2.line(debugImage, vertexUv, originUv, color, 1)
 
 if __name__ == "__main__":
     main()
