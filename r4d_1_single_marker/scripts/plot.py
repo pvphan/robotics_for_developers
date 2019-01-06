@@ -6,8 +6,8 @@ from r4d_common.plot_tools import get_data, simple_plot, odom_pos
 
 def position_comparison():
     s = [
-            ['cv', '/media/nvidia/nvme256/fiducial_slam/out_singlemarker_table.bag', '/p_cv', odom_pos('z')],
-            ['gtsam', '/media/nvidia/nvme256/fiducial_slam/out_singlemarker_table.bag', '/p_gtsam', odom_pos('z')],
+            ['cv', '/media/nvidia/nvme256/fiducial_slam/out_dataset_table_lean.bag', '/p_cv', odom_pos('z')],
+            ['gtsam', '/media/nvidia/nvme256/fiducial_slam/out_dataset_table_lean.bag', '/p_gtsam', odom_pos('z')],
         ]
 
     df = get_data(s).iloc[:100:2]

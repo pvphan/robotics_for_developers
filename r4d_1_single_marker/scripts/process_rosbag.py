@@ -86,8 +86,10 @@ def main():
     cvBridge = CvBridge()
     detector = apriltag.Detector()
 
+    shouldIncludeDebugImage = False
     inputPath = "/media/nvidia/nvme256/rcarsdata/dataset_table.bag"
-    outputPath = "/media/nvidia/nvme256/fiducial_slam/dataset_table_tagged.bag"
+    #outputPath = "/media/nvidia/nvme256/fiducial_slam/dataset_table_tagged.bag"
+    outputPath = "/media/nvidia/nvme256/fiducial_slam/dataset_table_lean.bag"
     allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
     tagsTopic = "/rcars/detector/tags"
     axisColors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
@@ -131,32 +133,33 @@ def main():
                         tag.pose = getRosPoseFromMatrix(cMm)
 
                         tagArray.tags.append(tag)
-
-                        # draw on debug image
-                        for corner in detection.corners:
-                            cornerInt = map(lambda x: int(round(x)), corner)
-                            cv2.circle(debugImage, tuple(cornerInt), 5, (0, 255, 0))
-
                         outputBag.write("/rcars/detector/tags", tagArray, msg.header.stamp if msg._has_header else t)
 
-                        length = 0.5
-                        markerAxes = np.array([
-                            [length, 0, 0, 1],
-                            [0, length, 0, 1],
-                            [0, 0, length, 1],
-                            [0, 0, 0, 1],
-                        ], dtype=np.float32).T
+                        # draw on debug image
+                        if shouldIncludeDebugImage:
+                            for corner in detection.corners:
+                                cornerInt = map(lambda x: int(round(x)), corner)
+                                cv2.circle(debugImage, tuple(cornerInt), 5, (0, 255, 0))
 
-                        imageAxes = mmult([homogK, cMm, markerAxes])
-                        axesNormed = (imageAxes / imageAxes[2,:])
-                        origin = tuple(map(lambda x: int(round(x)), axesNormed[:2, 3]))
-                        for i in range(3):
-                            color = axisColors[i]
-                            vertex = tuple(map(lambda x: int(round(x)), axesNormed[:2, i]))
-                            cv2.line(debugImage, vertex, origin, color, 1)
+                            length = 0.5
+                            markerAxes = np.array([
+                                [length, 0, 0, 1],
+                                [0, length, 0, 1],
+                                [0, 0, length, 1],
+                                [0, 0, 0, 1],
+                            ], dtype=np.float32).T
 
-                    imageMsg = cvBridge.cv2_to_imgmsg(debugImage, "bgr8")
-                    outputBag.write("/cam0/detection_image", imageMsg, msg.header.stamp if msg._has_header else t)
+                            imageAxes = mmult([homogK, cMm, markerAxes])
+                            axesNormed = (imageAxes / imageAxes[2,:])
+                            origin = tuple(map(lambda x: int(round(x)), axesNormed[:2, 3]))
+                            for i in range(3):
+                                color = axisColors[i]
+                                vertex = tuple(map(lambda x: int(round(x)), axesNormed[:2, i]))
+                                cv2.line(debugImage, vertex, origin, color, 1)
+
+                    if shouldIncludeDebugImage:
+                        imageMsg = cvBridge.cv2_to_imgmsg(debugImage, "bgr8")
+                        outputBag.write("/cam0/detection_image", imageMsg, msg.header.stamp if msg._has_header else t)
 
                 elif topic == "/cam0/camera_info":
                     K = np.array(list(msg.K)).reshape((3,3)).astype(np.float32)

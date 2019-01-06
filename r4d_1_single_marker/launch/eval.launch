@@ -1,6 +1,6 @@
 <launch>
     <arg name="bag_fname"
-         default="$(env HOME)/fiducial_slam/markers_table.bag" />
+         default="/media/nvidia/nvme256/fiducial_slam/dataset_table_lean.bag" />
 
     <node name="n"
           pkg="r4d_1_single_marker"
@@ -14,7 +14,7 @@
           pkg="rosbag"
           type="record"
           required="true"
-          args="-O $(env HOME)/fiducial_slam/out_singlemarker_table.bag
+          args="-O /media/nvidia/nvme256/fiducial_slam/out_dataset_table_lean.bag
               /p_cv
               /p_gtsam">
     </node>
