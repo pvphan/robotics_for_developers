@@ -21,7 +21,7 @@ namespace fiducial_slam {
                                           nh_(nh),
                                           nh_p_(nh_p),
                                           localizer_(nh_, nh_p_) {
-            std::string bag_fname("/media/nvidia/nvme256/rcarsdata/dataset_table.bag");
+            std::string bag_fname("/media/nvidia/nvme256/rcarsdata/dataset_table_tagged.bag");
             nh_p_.param("bag_fname", bag_fname, bag_fname);
 
             ROS_WARN_STREAM("Opening bag " << bag_fname);

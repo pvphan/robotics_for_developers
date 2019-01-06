@@ -24,11 +24,6 @@ catkin_package(
 #  LIBRARIES r4d_common
   CATKIN_DEPENDS geometry_msgs nav_msgs rcars_detector_msgs std_msgs rosbag tf eigen_conversions
   DEPENDS OpenCV Eigen3
-
-  ## vinh added
-  #INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS}
-  #LIBRARIES ${OpenCV_LIBS}
-  ## /vinh added
 )
 
 include_directories(

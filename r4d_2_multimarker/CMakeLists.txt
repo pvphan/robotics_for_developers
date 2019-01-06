@@ -23,4 +23,6 @@ add_executable(multimarker_node src/multimarker_node.cpp)
 
 target_link_libraries(multimarker_node
   ${catkin_LIBRARIES}
+  tbb
+  gtsam
 )

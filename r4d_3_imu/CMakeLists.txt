@@ -23,4 +23,6 @@ add_executable(imu_node src/imu_node.cpp)
 
 target_link_libraries(imu_node
   ${catkin_LIBRARIES}
+  tbb
+  gtsam
 )
