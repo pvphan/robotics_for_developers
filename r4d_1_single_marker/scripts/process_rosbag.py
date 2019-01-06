@@ -88,11 +88,10 @@ def main():
 
     shouldIncludeDebugImage = False
     inputPath = "/media/nvidia/nvme256/rcarsdata/dataset_table.bag"
-    #outputPath = "/media/nvidia/nvme256/fiducial_slam/dataset_table_tagged.bag"
     outputPath = "/media/nvidia/nvme256/fiducial_slam/dataset_table_lean.bag"
     allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
     tagsTopic = "/rcars/detector/tags"
-    axisColors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
+    axisColors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)] # RGB
     D = None
     K = None
 
@@ -133,7 +132,6 @@ def main():
                         tag.pose = getRosPoseFromMatrix(cMm)
 
                         tagArray.tags.append(tag)
-                        outputBag.write("/rcars/detector/tags", tagArray, msg.header.stamp if msg._has_header else t)
 
                         # draw on debug image
                         if shouldIncludeDebugImage:
@@ -156,6 +154,8 @@ def main():
                                 color = axisColors[i]
                                 vertex = tuple(map(lambda x: int(round(x)), axesNormed[:2, i]))
                                 cv2.line(debugImage, vertex, origin, color, 1)
+
+                    outputBag.write(tagsTopic, tagArray, msg.header.stamp if msg._has_header else t)
 
                     if shouldIncludeDebugImage:
                         imageMsg = cvBridge.cv2_to_imgmsg(debugImage, "bgr8")
