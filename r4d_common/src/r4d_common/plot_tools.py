@@ -28,6 +28,7 @@ def get_data(s):
             for spec in mapping[topic]:
                 label, _, _, plot_fn = spec
                 if hasattr(msg, 'header'):
+                    print(msg.header)
                     data[label][0].append(msg.header.stamp.to_sec())
                 else:
                     data[label][0].append(t)

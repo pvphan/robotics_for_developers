@@ -14,6 +14,7 @@ from rcars_detector_msgs.msg import Tag, TagArray
 
 def main():
     cvBridge = CvBridge()
+    tagSize = 0.16
     detector = apriltag.Detector()
 
     shouldIncludeDebugImage = False
@@ -55,6 +56,7 @@ def main():
                     for detection in detections:
                         cameraParams = K[0,0], K[1,1], K[0,2], K[1,2]
                         cMm, _, _ = detector.detection_pose(detection, cameraParams)
+                        cMm[:3,3] *= tagSize
 
                         tag = Tag()
                         tag.id = detection.tag_id
@@ -72,19 +74,17 @@ def main():
 
                             # convert back to verify
                             cMm_ = getMatrixFromRosPose(tag.pose)
-                            drawAxes(debugImage, K, cMm_)
+                            drawAxis(debugImage, K, cMm_)
 
                     outputBag.write(tagsTopic, tagArray, msg.header.stamp if msg._has_header else t)
 
                     if shouldIncludeDebugImage:
                         imageMsg = cvBridge.cv2_to_imgmsg(debugImage, "bgr8")
                         outputBag.write("/cam0/detection_image", imageMsg, msg.header.stamp if msg._has_header else t)
-
-                elif topic == "/cam0/camera_info":
-                    K = np.array(list(msg.K)).reshape((3,3)).astype(np.float32)
-                    D = np.array(list(msg.D)).astype(np.float32)
-                    outputBag.write(topic, msg, msg.header.stamp if msg._has_header else t)
                 else:
+                    if topic == "/cam0/camera_info":
+                        K = np.array(list(msg.K)).reshape((3,3)).astype(np.float32)
+                        D = np.array(list(msg.D)).astype(np.float32)
                     outputBag.write(topic, msg, msg.header.stamp if msg._has_header else t)
 
     finally:
@@ -173,26 +173,25 @@ def rvecTvecFromMatrix4x4(M):
     tvec = M[:3, 3].flatten()
     return rvec, tvec
 
-def drawAxes(debugImage, K, poseAxes):
+def drawAxis(debugImage, K, poseAxis, axisLength=0.5, axisThick=1):
     axisColors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)] # RGB
-    length = 0.5
     markerAxes = np.array([
-        [length, 0, 0, 1],
-        [0, length, 0, 1],
-        [0, 0, length, 1],
+        [axisLength, 0, 0, 1],
+        [0, axisLength, 0, 1],
+        [0, 0, axisLength, 1],
         [0, 0, 0, 1],
     ], dtype=np.float32).T
 
     homogK = np.eye(4, dtype=np.float32)
     homogK[:3, :3] = K
 
-    imageAxes = mmult([homogK, poseAxes, markerAxes])
+    imageAxes = mmult([homogK, poseAxis, markerAxes])
     axesNormed = (imageAxes / imageAxes[2,:])
     originUv = tuple(map(lambda x: int(round(x)), axesNormed[:2, 3]))
     for i in range(3):
         color = axisColors[i]
         vertexUv = tuple(map(lambda x: int(round(x)), axesNormed[:2, i]))
-        cv2.line(debugImage, vertexUv, originUv, color, 1)
+        cv2.line(debugImage, vertexUv, originUv, color, axisThick)
 
 if __name__ == "__main__":
     main()
