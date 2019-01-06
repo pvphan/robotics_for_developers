@@ -51,6 +51,7 @@ def main():
 
                     # detect april tag, write to output bag
                     tagArray = TagArray()
+                    tagArray.header = msg.header
                     detections = detector.detect(imageUndistorted)
 
                     for detection in detections:
