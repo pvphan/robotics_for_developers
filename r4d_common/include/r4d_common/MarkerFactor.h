@@ -81,10 +81,19 @@ namespace fiducial_slam {
             for (int i = 0; i < 4; i++) {
                 // Jacobian d(point in world) / d(marker pose)
                 gtsam::Matrix H0;
+
                 // Coordinates of the current corner in the marker frame
-                gtsam::Point3 marker_corner(i % 2 == 1 ? half_tag_size_ : -half_tag_size_,
-                                            i < 2 ? half_tag_size_ : -half_tag_size_,
-                                            0);
+                gtsam::Point3 marker_corner;
+                if (i == 3) {
+                    marker_corner = gtsam::Point3(-half_tag_size_, half_tag_size_, 0);
+                } else if (i == 2) {
+                    marker_corner = gtsam::Point3(half_tag_size_, half_tag_size_, 0);
+                } else if (i == 1) {
+                    marker_corner = gtsam::Point3(half_tag_size_, -half_tag_size_, 0);
+                } else if (i == 0) {
+                    marker_corner = gtsam::Point3(-half_tag_size_, -half_tag_size_, 0);
+                }
+
                 // Use the marker pose to transform into world coordinates
                 auto world_corner = marker_pose.transform_from(marker_corner, H0);
 
