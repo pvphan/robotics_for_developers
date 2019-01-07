@@ -84,13 +84,13 @@ namespace fiducial_slam {
 
                 // Coordinates of the current corner in the marker frame
                 gtsam::Point3 marker_corner;
-                if (i == 3) {
+                if (i == 0) {
                     marker_corner = gtsam::Point3(-half_tag_size_, half_tag_size_, 0);
-                } else if (i == 2) {
-                    marker_corner = gtsam::Point3(half_tag_size_, half_tag_size_, 0);
                 } else if (i == 1) {
+                    marker_corner = gtsam::Point3(half_tag_size_, half_tag_size_, 0);
+                } else if (i == 2) {
                     marker_corner = gtsam::Point3(half_tag_size_, -half_tag_size_, 0);
-                } else if (i == 0) {
+                } else if (i == 3) {
                     marker_corner = gtsam::Point3(-half_tag_size_, -half_tag_size_, 0);
                 }
 

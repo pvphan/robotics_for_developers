@@ -58,6 +58,9 @@ def main():
                         cameraParams = K[0,0], K[1,1], K[0,2], K[1,2]
                         cMm, _, _ = detector.detection_pose(detection, cameraParams,
                                                             tag_size=tagSize)
+                        # rotate about x-axis by 180 deg so Z points up from apriltag
+                        rotX = cv2.Rodrigues(np.array([[np.pi, 0., 0.]]))[0]
+                        cMm[:3, :3] = np.dot(cMm[:3, :3], rotX)
 
                         tag = Tag()
                         tag.id = detection.tag_id
