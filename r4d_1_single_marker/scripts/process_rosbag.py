@@ -17,7 +17,7 @@ def main():
     tagSize = 0.16
     detector = apriltag.Detector()
 
-    shouldIncludeDebugImage = False
+    shouldIncludeDebugImage = True
     #dataSetName = "dataset_dataset1"
     dataSetName = "dataset_table"
     inputPath = "/media/nvidia/nvme256/rcarsdata/{}.bag".format(dataSetName)
@@ -56,8 +56,8 @@ def main():
 
                     for detection in detections:
                         cameraParams = K[0,0], K[1,1], K[0,2], K[1,2]
-                        cMm, _, _ = detector.detection_pose(detection, cameraParams)
-                        cMm[:3,3] *= tagSize
+                        cMm, _, _ = detector.detection_pose(detection, cameraParams,
+                                                            tag_size=tagSize)
 
                         tag = Tag()
                         tag.id = detection.tag_id
@@ -69,13 +69,16 @@ def main():
 
                         # draw on debug image
                         if shouldIncludeDebugImage:
-                            for corner in detection.corners:
+                            for id, corner in enumerate(detection.corners):
                                 cornerInt = map(lambda x: int(round(x)), corner)
                                 cv2.circle(debugImage, tuple(cornerInt), 5, (0, 255, 0))
+                                cv2.putText(debugImage, str(id),
+                                            tuple([cornerInt[0] + 10, cornerInt[1]]),
+                                            cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 1)
 
                             # convert back to verify
                             cMm_ = getMatrixFromRosPose(tag.pose)
-                            drawAxis(debugImage, K, cMm_)
+                            drawAxis(debugImage, K, cMm_, tagSize / 2.)
 
                     outputBag.write(tagsTopic, tagArray, msg.header.stamp if msg._has_header else t)
 
@@ -174,14 +177,14 @@ def rvecTvecFromMatrix4x4(M):
     tvec = M[:3, 3].flatten()
     return rvec, tvec
 
-def drawAxis(debugImage, K, poseAxis, axisLength=0.5, axisThick=1):
+def drawAxis(debugImage, K, poseAxis, a=0.5, axisThick=1):
     axisColors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)] # RGB
     markerAxes = np.array([
-        [axisLength, 0, 0, 1],
-        [0, axisLength, 0, 1],
-        [0, 0, axisLength, 1],
-        [0, 0, 0, 1],
-    ], dtype=np.float32).T
+        [a, 0, 0, 0],
+        [0, a, 0, 0],
+        [0, 0, a, 0],
+        [1, 1, 1, 1],
+    ], dtype=np.float32)
 
     homogK = np.eye(4, dtype=np.float32)
     homogK[:3, :3] = K

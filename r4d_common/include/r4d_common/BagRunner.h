@@ -30,7 +30,6 @@ namespace fiducial_slam {
 
         void run() {
             rosbag::View view(bag_);
-            //ros::Rate r(10);
 
             for (auto const &msg : view) {
                 if (msg.getTopic() == "/cam0/camera_info") {

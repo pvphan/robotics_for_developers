@@ -27,8 +27,8 @@ namespace fiducial_slam {
 
         world_points.emplace_back(-half,  half, 0);  // top left
         world_points.emplace_back( half,  half, 0);  // top right
-        world_points.emplace_back(-half, -half, 0);  // bottom left
         world_points.emplace_back( half, -half, 0);  // bottom right
+        world_points.emplace_back(-half, -half, 0);  // bottom left
 
         auto ret = std::make_pair(image_points, world_points);
         return ret;
