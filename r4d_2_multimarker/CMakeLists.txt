@@ -23,6 +23,7 @@ add_executable(multimarker_node src/multimarker_node.cpp)
 
 target_link_libraries(multimarker_node
   ${catkin_LIBRARIES}
+  mkl_core mkl_tbb_thread mkl_def mkl_intel_lp64 mkl_intel_ilp64
   tbb
   gtsam
 )

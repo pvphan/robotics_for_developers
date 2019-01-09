@@ -7,8 +7,8 @@ from r4d_common.plot_tools import get_data, simple_plot, odom_pos
 
 def position_comparison():
     s = [
-            ['cv', expanduser('~/datasets/out_dataset_table.bag'), '/p_cv', odom_pos('z')],
-            ['gtsam', expanduser('~/datasets/out_dataset_table.bag'), '/p_gtsam', odom_pos('z')],
+            ['cv', expanduser('~/fiducial_slam/out_dataset_table.bag'), '/p_cv', odom_pos('z')],
+            ['gtsam', expanduser('~/fiducial_slam/out_dataset_table.bag'), '/p_gtsam', odom_pos('z')],
         ]
 
     df = get_data(s).iloc[:100:2]

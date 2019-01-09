@@ -18,8 +18,8 @@ def main():
 
     shouldIncludeDebugImage = True
     dataSetName = "dataset_table"
-    inputPath = expanduser("~/datasets/{}.bag").format(dataSetName)
-    outputPath = expanduser("~/datasets/{}_tagged.bag").format(dataSetName)
+    inputPath = expanduser("~/fiducial_slam/{}.bag").format(dataSetName)
+    outputPath = expanduser("~/fiducial_slam/{}_tagged.bag").format(dataSetName)
     allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
     tagsTopic = "/rcars/detector/tags"
     D = None
