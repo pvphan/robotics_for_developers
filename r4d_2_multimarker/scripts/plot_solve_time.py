@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from IPython import embed
 import plotly.plotly as py
 import plotly.graph_objs as go
 from r4d_common.plot_tools import get_data, simple_plot, odom_pos
@@ -11,8 +10,6 @@ def solve_time():
         ]
 
     df = get_data(s).iloc[:1000:50]
-
-    embed()
 
     fig = {
         'data': [go.Bar(x=range(1, 1000, 50),

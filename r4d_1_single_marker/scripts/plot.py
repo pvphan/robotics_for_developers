@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from os.path import expanduser
 
-from IPython import embed
 import plotly.plotly as py
 from r4d_common.plot_tools import get_data, simple_plot, odom_pos
 

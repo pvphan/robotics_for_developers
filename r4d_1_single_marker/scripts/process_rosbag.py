@@ -17,9 +17,8 @@ def main():
     detector = apriltag.Detector()
 
     shouldIncludeDebugImage = True
-    dataSetName = "dataset_table"
-    inputPath = expanduser("~/fiducial_slam/{}.bag").format(dataSetName)
-    outputPath = expanduser("~/fiducial_slam/{}_tagged.bag").format(dataSetName)
+    inputPath = expanduser("~/fiducial_slam/dataset_table.bag")
+    outputPath = expanduser("~/fiducial_slam/markers_table.bag").format(dataSetName)
     allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
     tagsTopic = "/rcars/detector/tags"
     D = None
