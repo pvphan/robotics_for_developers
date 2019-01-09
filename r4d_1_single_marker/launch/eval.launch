@@ -1,23 +1,22 @@
 <launch>
 
-    <arg name="bag_fname"
-         default="/media/nvidia/nvme256/fiducial_slam/dataset_table_tagged.bag" />
+    <arg name="bag_fname" default="$(optenv HOME)/datasets/dataset_table_tagged.bag" />
 
     <node name="n"
-          pkg="r4d_1_single_marker"
-          type="single_marker_node"
-          output="screen"
-          required="true">
+        pkg="r4d_1_single_marker"
+        type="single_marker_node"
+        output="screen"
+        required="true">
         <param name="bag_fname" value="$(arg bag_fname)" />
     </node>
 
     <node name="record"
-          pkg="rosbag"
-          type="record"
-          required="true"
-          args="-O /media/nvidia/nvme256/fiducial_slam/out_dataset_table.bag
-              /p_cv
-              /p_gtsam">
+        pkg="rosbag"
+        type="record"
+        required="true"
+        args="-O $(optenv HOME)/datasets/out_dataset_table.bag
+        /p_cv
+        /p_gtsam">
     </node>
 
 </launch>

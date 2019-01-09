@@ -1,5 +1,4 @@
-import pdb
-from pprint import pprint
+from os.path import expanduser
 
 import apriltag
 import cv2
@@ -18,10 +17,9 @@ def main():
     detector = apriltag.Detector()
 
     shouldIncludeDebugImage = True
-    #dataSetName = "dataset_dataset1"
     dataSetName = "dataset_table"
-    inputPath = "/media/nvidia/nvme256/rcarsdata/{}.bag".format(dataSetName)
-    outputPath = "/media/nvidia/nvme256/fiducial_slam/{}_tagged.bag".format(dataSetName)
+    inputPath = expanduser("~/datasets/{}.bag").format(dataSetName)
+    outputPath = expanduser("~/datasets/{}_tagged.bag").format(dataSetName)
     allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
     tagsTopic = "/rcars/detector/tags"
     D = None
