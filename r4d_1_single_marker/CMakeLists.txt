@@ -21,10 +21,9 @@ include_directories(
 
 add_executable(single_marker_node src/single_marker_node.cpp)
 
-if (MKL_INCLUDE_DIRS)
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
   set(OPTIONAL_MKL_LIBS mkl_core mkl_tbb_thread mkl_def mkl_intel_lp64 mkl_intel_ilp64)
 endif()
-
 
 target_link_libraries(single_marker_node
   ${catkin_LIBRARIES}
