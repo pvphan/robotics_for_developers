@@ -26,7 +26,7 @@ def position_comparison():
         }
     }
 
-    url = py.plot(fig, filename='r4d_1_camera_position')
+    url = py.plot(fig, filename='r4d_1_camera_position', auto_open=False)
 
 if __name__ == "__main__":
     position_comparison()

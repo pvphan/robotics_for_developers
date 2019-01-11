@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="bag_fname" default="$(env HOME)/fiducial_slam/dataset_table_tagged.bag" />
+    <arg name="bag_fname" default="$(env HOME)/fiducial_slam/markers_table.bag" />
 
     <node name="n"
         pkg="r4d_1_single_marker"
