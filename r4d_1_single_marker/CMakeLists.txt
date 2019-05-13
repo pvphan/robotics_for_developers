@@ -27,6 +27,7 @@ endif()
 
 target_link_libraries(single_marker_node
   ${catkin_LIBRARIES}
+  ${OPTIONAL_MKL_LIBS}
   tbb
   gtsam
 )

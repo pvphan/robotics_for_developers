@@ -21,8 +21,13 @@ include_directories(
 
 add_executable(imu_node src/imu_node.cpp)
 
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+  set(OPTIONAL_MKL_LIBS mkl_core mkl_tbb_thread mkl_def mkl_intel_lp64 mkl_intel_ilp64)
+endif()
+
 target_link_libraries(imu_node
   ${catkin_LIBRARIES}
+  ${OPTIONAL_MKL_LIBS}
   tbb
   gtsam
 )
