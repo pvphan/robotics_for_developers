@@ -24,10 +24,9 @@ def main():
     D = None
     K = None
 
+    inputBag = rosbag.Bag(inputPath)
+    outputBag = rosbag.Bag(outputPath, "w")
     try:
-        inputBag = rosbag.Bag(inputPath)
-        outputBag = rosbag.Bag(outputPath, "w")
-
         for topic, msg, t in inputBag.read_messages(topics=allTopics):
             if topic == "/tf" and msg.transforms:
                 outputBag.write(topic, msg, msg.transforms[0].header.stamp)
@@ -106,7 +105,7 @@ def quaternion_from_matrix(matrix, isprecise=False):
     If isprecise is True, the input matrix is assumed to be a precise rotation
     matrix and a faster algorithm is used.
     """
-    M = np.array(matrix, dtype=np.float64, copy=False)[:4, :4]
+    M = np.array(matrix, dtype=np.float32, copy=False)[:4, :4]
     if isprecise:
         q = np.empty((4, ))
         t = np.trace(M)
@@ -127,7 +126,7 @@ def quaternion_from_matrix(matrix, isprecise=False):
             q[k] = M[k, i] + M[i, k]
             q[3] = M[k, j] - M[j, k]
             q = q[[3, 0, 1, 2]]
-        q *= 0.5 / math.sqrt(t * M[3, 3])
+        q *= 0.5 / np.sqrt(t * M[3, 3])
     else:
         m00 = M[0, 0]
         m01 = M[0, 1]
@@ -152,7 +151,8 @@ def quaternion_from_matrix(matrix, isprecise=False):
     return q
 
 def getRosPoseFromMatrix(pose4x4):
-    quaternion = quaternion_from_matrix(pose4x4[:3,:3])
+    #quaternion = quaternion_from_matrix(pose4x4[:3,:3])
+    quaternion = quaternion_from_matrix(pose4x4, isprecise=True)
     rosQuaternion = Quaternion()
     rosQuaternion.w = quaternion[0]
     rosQuaternion.x = quaternion[1]

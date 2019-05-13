@@ -23,7 +23,6 @@ add_executable(imu_node src/imu_node.cpp)
 
 target_link_libraries(imu_node
   ${catkin_LIBRARIES}
-  mkl_core mkl_tbb_thread mkl_def mkl_intel_lp64 mkl_intel_ilp64
   tbb
   gtsam
 )

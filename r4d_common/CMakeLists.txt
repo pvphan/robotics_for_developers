@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.6)
 project(r4d_common)
 
 add_definitions(-std=c++11)
@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(gtsam NO_MODULE CONFIGS gtsamConfig.cmake GTSAMConfig.cmake)
+find_package(gtsam)
 
 catkin_python_setup()
 
