@@ -1,2 +1,2 @@
 #!/bin/bash
-cd ~/r4d_catkin && catkin_make && source devel/setup.bash
+cd ~/r4d_catkin && catkin_make --pkg rcars_detector_msgs && catkin_make
