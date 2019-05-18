@@ -1,4 +1,5 @@
 from os.path import expanduser
+from pprint import pprint
 
 import apriltag
 import cv2
@@ -77,6 +78,11 @@ def main():
 
                             # convert back to verify
                             cMm_ = getMatrixFromRosPose(tag.pose)
+                            print("tag pose:")
+                            print(tag.pose)
+                            print()
+                            print("cMm_")
+                            pprint(cMm_)
                             drawAxis(debugImage, K, cMm_, tagSize / 2.)
 
                     outputBag.write(tagsTopic, tagArray, msg.header.stamp if msg._has_header else t)
