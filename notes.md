@@ -19,3 +19,43 @@ sensor node: can poll sensor (grab frame, get IMU data) or read ros message
         - (online) image.array -> np.array
 
 map out SFM_example and r4d_3_imu on whiteboard. consolidate the good parts, derive custom example using rcars dataset
+
+
+platform TODOs
+- calibrate camera
+- figure out fixed inputs with very naive motion model
+- calibrate IMU
+
+tooling TODOs
+- visualize robot state
+    - pose history
+    - landmarks in 3D
+    - covariance (spheres?)
+- sensor recording system
+- sensor playback system
+- [theory] data processing
+
+theory
+- stachniss lectures
+
+roadmap (reverse order)
+- online SLAM robot, simple goal [optimized]
+- online stop-go SLAM robot, simple goal [planning]
+- online stop-go SLAM robot, fixed movement pattern [iSAM2]
+- offline stop-go SLAM robot, fixed movement pattern [actuation]
+    - platform moves roughly to motion model
+- offline stop-go SLAM robot, passive observation [perception]
+    - sensors recording
+    - playback system working
+
+
+[theory] specify system conops
+derisk: building, data capture, playback, online proc
+
+build debug tools:
+    - parse rosbag to snapshot folders
+    - snapshot context visualizer: image folders, text files, factorgraph
+prototype system on rcars dataset
+
+gather data (per spec)
+prototype system on custom dataset
