@@ -52,6 +52,7 @@ def main():
                     detections = detector.detect(imageUndistorted)
 
                     for detection in detections:
+                        print(detection.corners)
                         cameraParams = K[0,0], K[1,1], K[0,2], K[1,2]
                         cMm, _, _ = detector.detection_pose(detection, cameraParams,
                                                             tag_size=tagSize)
