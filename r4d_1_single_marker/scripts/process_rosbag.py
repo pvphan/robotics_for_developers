@@ -18,8 +18,10 @@ def main():
     detector = apriltag.Detector()
 
     shouldIncludeDebugImage = True
-    inputPath = expanduser("~/fiducial_slam/dataset_table.bag")
-    outputPath = expanduser("~/fiducial_slam/markers_table.bag")
+    #inputPath = expanduser("~/fiducial_slam/dataset_table.bag")
+    #outputPath = expanduser("~/fiducial_slam/markers_table.bag")
+    inputPath = expanduser("~/dataset_table.bag")
+    outputPath = expanduser("~/markers_table.bag")
     allTopics = [ "/cam0/camera_info", "/cam0/image_raw", "/imu0", "/vicon/auk/auk" ]
     tagsTopic = "/rcars/detector/tags"
     D = None
@@ -65,6 +67,10 @@ def main():
                         # rotate about x-axis by 180 deg so Z points up from apriltag
                         rotX = cv2.Rodrigues(np.array([[np.pi, 0., 0.]]))[0]
                         cMm[:3, :3] = np.dot(cMm[:3, :3], rotX)
+
+                        print("cMm_after")
+                        print(cMm)
+                        print()
 
                         tag = Tag()
                         tag.id = detection.tag_id
